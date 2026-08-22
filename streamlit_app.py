@@ -1,8 +1,5 @@
 import streamlit as st
-
-# =========================
-# CẤU HÌNH
-# =========================
+from openai import OpenAI
 
 st.set_page_config(
     page_title="MathDNA AI",
@@ -11,120 +8,117 @@ st.set_page_config(
 )
 
 # =========================
-# CSS
+# KẾT NỐI AI
 # =========================
 
-st.markdown("""
-<style>
-    .main {
-        max-width: 800px;
-        margin: auto;
-    }
-
-    .welcome {
-        text-align: center;
-        padding: 30px 10px 20px 10px;
-    }
-
-    .welcome h1 {
-        font-size: 36px;
-        margin-bottom: 5px;
-    }
-
-    .welcome p {
-        color: #777;
-        font-size: 17px;
-    }
-
-    .info-box {
-        padding: 15px;
-        border-radius: 12px;
-        background: #f5f7fa;
-        margin-top: 10px;
-    }
-</style>
-""", unsafe_allow_html=True)
+client = OpenAI(
+    api_key=st.secrets["OPENAI_API_KEY"]
+)
 
 # =========================
-# SESSION
+# BỘ NÃO MATHDNA
+# =========================
+
+MATHDNA_PROMPT = """
+Bạn là MathDNA AI, một trợ lý Toán học dành cho học sinh THCS.
+
+Mục tiêu:
+Giúp học sinh hiểu cách mình tư duy và tự sửa lỗi,
+không chỉ đưa đáp án.
+
+Khi nhận bài toán hoặc lời giải:
+
+1. Xác định dạng toán.
+2. Xác định kiến thức cần dùng.
+3. Nếu học sinh đưa lời giải:
+   - kiểm tra từng bước;
+   - tìm bước sai đầu tiên;
+   - xác định loại lỗi.
+4. Không đưa đáp án ngay nếu học sinh đang học.
+5. Đưa gợi ý vừa đủ để học sinh tự sửa.
+6. Giải thích ngắn gọn, dễ hiểu.
+7. Không bịa dữ kiện.
+
+Các loại lỗi có thể gồm:
+- Sai biến đổi
+- Sai dấu
+- Sai công thức
+- Sai tính toán
+- Sai logic
+- Thiếu điều kiện
+- Hiểu sai đề
+
+Luôn ưu tiên việc giúp học sinh tự suy luận.
+"""
+
+# =========================
+# LỊCH SỬ CHAT
 # =========================
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
 # =========================
-# HEADER
+# GIAO DIỆN
 # =========================
 
-st.markdown("""
-<div class="welcome">
-    <h1>🧠 MathDNA AI</h1>
-    <p>Trợ lý giúp bạn hiểu cách mình đang tư duy Toán</p>
-</div>
-""", unsafe_allow_html=True)
+st.title("🧠 MathDNA AI")
 
-# =========================
-# LỜI CHÀO
-# =========================
+st.caption(
+    "Trợ lý giúp bạn hiểu cách mình đang tư duy Toán"
+)
 
-if len(st.session_state.messages) == 0:
-
-    st.info(
-        "👋 Xin chào! Hãy gửi một bài toán hoặc lời giải. "
-        "MathDNA sẽ giúp phân tích cách bạn suy nghĩ."
-    )
-
-    col1, col2 = st.columns(2)
-
-    with col1:
-        st.button(
-            "📝 Nhập bài toán",
-            use_container_width=True
-        )
-
-    with col2:
-        st.button(
-            "🔍 Kiểm tra lời giải",
-            use_container_width=True
-        )
-
-# =========================
-# HIỂN THỊ CHAT
-# =========================
-
+# Hiển thị lịch sử
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
-
-        st.write(message["content"])
+        st.markdown(message["content"])
 
 # =========================
-# KHUNG NHẬP
+# NHẬP
 # =========================
 
 user_input = st.chat_input(
     "Nhập bài toán hoặc lời giải..."
 )
 
-# =========================
-# XỬ LÝ
-# =========================
-
 if user_input:
 
+    # Hiển thị câu hỏi
     st.session_state.messages.append({
         "role": "user",
         "content": user_input
     })
 
+    with st.chat_message("user"):
+        st.markdown(user_input)
+
+    # Gọi AI
+    with st.chat_message("assistant"):
+
+        with st.spinner("🧠 MathDNA đang phân tích..."):
+
+            try:
+
+                response = client.responses.create(
+                    model="gpt-5-mini",
+                    instructions=MATHDNA_PROMPT,
+                    input=user_input
+                )
+
+                answer = response.output_text
+
+            except Exception as e:
+
+                answer = (
+                    "⚠️ Có lỗi khi kết nối với AI.\n\n"
+                    f"`{str(e)}`"
+                )
+
+        st.markdown(answer)
+
+    # Lưu câu trả lời
     st.session_state.messages.append({
         "role": "assistant",
-        "content": (
-            "🧠 Mình đã nhận được bài của bạn!\n\n"
-            "Hiện tại AI chưa được kết nối. "
-            "Bước tiếp theo chúng ta sẽ đưa bộ phân tích "
-            "Toán vào đây."
-        )
+        "content": answer
     })
-
-    st.rerun()
