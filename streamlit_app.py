@@ -14,139 +14,32 @@ st.set_page_config(
 
 
 # ==========================================
-# CSS
+# DỮ LIỆU DNA MẪU
 # ==========================================
 
-st.markdown("""
-<style>
+if "dna" not in st.session_state:
 
-/* ==============================
-   SIDEBAR
-   ============================== */
+    st.session_state.dna = {
+        "overall": 72,
+        "algebra": 80,
+        "geometry": 60,
+        "functions": 70,
+        "reasoning": 50,
 
-[data-testid="stSidebar"] {
-    background-color: #f7f7f8;
-}
+        "errors": {
+            "Sai dấu": 7,
+            "Quên điều kiện": 4,
+            "Tính toán": 2,
+        },
 
-[data-testid="stSidebar"] > div:first-child {
-    padding-top: 1.5rem;
-}
-
-.mathdna-logo {
-    font-size: 25px;
-    font-weight: 700;
-    margin-bottom: 2px;
-}
-
-.mathdna-subtitle {
-    font-size: 13px;
-    opacity: 0.65;
-    margin-bottom: 18px;
-}
-
-.sidebar-section {
-    font-size: 11px;
-    font-weight: 700;
-    opacity: 0.55;
-    margin-top: 18px;
-    margin-bottom: 7px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-
-/* ==============================
-   CHAT HEADER
-   ============================== */
-
-.chat-header {
-    padding: 8px 4px 14px 4px;
-    border-bottom: 1px solid rgba(128,128,128,0.2);
-    margin-bottom: 20px;
-}
-
-.chat-title {
-    font-size: 20px;
-    font-weight: 700;
-}
-
-.chat-subtitle {
-    font-size: 12px;
-    opacity: 0.55;
-}
-
-
-/* ==============================
-   EMPTY CHAT
-   ============================== */
-
-.empty-chat {
-    text-align: center;
-    padding-top: 90px;
-    padding-bottom: 80px;
-}
-
-.empty-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
-}
-
-.empty-title {
-    font-size: 22px;
-    font-weight: 700;
-    margin-bottom: 8px;
-}
-
-.empty-description {
-    font-size: 14px;
-    opacity: 0.6;
-    max-width: 350px;
-    margin: auto;
-}
-
-
-/* ==============================
-   MESSAGE LABEL
-   ============================== */
-
-.user-label {
-    text-align: right;
-    font-size: 11px;
-    opacity: 0.5;
-    margin-bottom: 3px;
-}
-
-.ai-label {
-    font-size: 11px;
-    opacity: 0.5;
-    margin-bottom: 3px;
-}
-
-
-/* ==============================
-   IMAGE PREVIEW
-   ============================== */
-
-.image-preview {
-    border-radius: 14px;
-    margin-top: 8px;
-}
-
-
-/* ==============================
-   CHAT INPUT
-   ============================== */
-
-[data-testid="stChatInput"] {
-    margin-top: 10px;
-}
-
-</style>
-""", unsafe_allow_html=True)
+        "solved": 18,
+        "correct": 14,
+        "week_progress": 8
+    }
 
 
 # ==========================================
-# KHỞI TẠO PHIÊN
+# PHIÊN CHAT
 # ==========================================
 
 if "sessions" not in st.session_state:
@@ -166,45 +59,65 @@ if "current_session" not in st.session_state:
 
 
 # ==========================================
-# TẠO PHIÊN MỚI
+# CSS
 # ==========================================
 
-def create_new_session():
+st.markdown("""
+<style>
 
-    number = len(st.session_state.sessions) + 1
+[data-testid="stSidebar"] {
+    background: #f7f7f8;
+}
 
-    session_id = f"session_{number}"
+.mathdna-logo {
+    font-size: 25px;
+    font-weight: 700;
+}
 
-    st.session_state.sessions[session_id] = {
-        "title": "Cuộc trò chuyện mới",
-        "created": datetime.now().strftime("%H:%M"),
-        "messages": []
-    }
+.mathdna-subtitle {
+    font-size: 13px;
+    opacity: .6;
+    margin-bottom: 18px;
+}
 
-    st.session_state.current_session = session_id
+.dna-card {
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(128,128,128,.2);
+    margin-bottom: 15px;
+}
 
+.dna-score {
+    font-size: 46px;
+    font-weight: 800;
+}
 
-# ==========================================
-# XÓA PHIÊN
-# ==========================================
+.dna-label {
+    font-size: 13px;
+    opacity: .6;
+}
 
-def delete_session(session_id):
+.skill-title {
+    font-weight: 700;
+    font-size: 15px;
+}
 
-    if len(st.session_state.sessions) <= 1:
+.error-item {
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(128,128,128,.08);
+    margin-bottom: 7px;
+}
 
-        st.session_state.sessions[session_id] = {
-            "title": "Cuộc trò chuyện mới",
-            "created": datetime.now().strftime("%H:%M"),
-            "messages": []
-        }
+.section-title {
+    font-size: 19px;
+    font-weight: 750;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
 
-        return
-
-    del st.session_state.sessions[session_id]
-
-    st.session_state.current_session = (
-        list(st.session_state.sessions.keys())[0]
-    )
+</style>
+""", unsafe_allow_html=True)
 
 
 # ==========================================
@@ -212,8 +125,6 @@ def delete_session(session_id):
 # ==========================================
 
 with st.sidebar:
-
-    # Logo
 
     st.markdown(
         '<div class="mathdna-logo">🧠 MathDNA</div>',
@@ -227,404 +138,386 @@ with st.sidebar:
         unsafe_allow_html=True
     )
 
+    st.divider()
 
-    # Cuộc trò chuyện mới
-
-    if st.button(
-        "＋  Cuộc trò chuyện mới",
-        use_container_width=True
-    ):
-
-        create_new_session()
-
-        st.rerun()
-
-
-    # Tìm kiếm
-
-    search_text = st.text_input(
-        "🔍",
-        placeholder="Tìm cuộc trò chuyện...",
+    page = st.radio(
+        "Điều hướng",
+        [
+            "💬 Trò chuyện",
+            "🧬 DNA Toán học"
+        ],
         label_visibility="collapsed"
     )
 
+    st.divider()
+
+    st.caption("MathDNA V4.1")
+
+
+# ==========================================
+# DỮ LIỆU
+# ==========================================
+
+dna = st.session_state.dna
+
+
+# ==========================================
+# TRANG DNA
+# ==========================================
+
+if page == "🧬 DNA Toán học":
+
+    st.title("🧬 DNA Toán học")
+
+    st.caption(
+        "Hồ sơ năng lực và những điểm cần cải thiện"
+    )
+
+
+    # --------------------------------------
+    # TỔNG QUAN
+    # --------------------------------------
 
     st.markdown(
-        '<div class="sidebar-section">📚 Cuộc trò chuyện</div>',
+        '<div class="section-title">'
+        '🎯 Mức độ tổng quan'
+        '</div>',
         unsafe_allow_html=True
     )
 
 
-    # Lọc danh sách
-
-    sessions = list(
-        st.session_state.sessions.items()
-    )
-
-
-    if search_text:
-
-        sessions = [
-            item
-            for item in sessions
-            if search_text.lower()
-            in item[1]["title"].lower()
-        ]
-
-
-    # Hiển thị danh sách
-
-    for session_id, session in sessions:
-
-        is_current = (
-            session_id ==
-            st.session_state.current_session
-        )
-
-
-        if is_current:
-
-            button_text = (
-                "🔵  " + session["title"]
-            )
-
-        else:
-
-            button_text = (
-                "　" + session["title"]
-            )
-
-
-        if st.button(
-            button_text,
-            key=f"sidebar_{session_id}",
-            use_container_width=True
-        ):
-
-            st.session_state.current_session = (
-                session_id
-            )
-
-            st.rerun()
-
-
-    st.divider()
-
-
-    # Xóa
-
-    if st.button(
-        "🗑️  Xóa phiên hiện tại",
-        use_container_width=True
-    ):
-
-        delete_session(
-            st.session_state.current_session
-        )
-
-        st.rerun()
-
-
-    # Cài đặt
-
-    if st.button(
-        "⚙️  Cài đặt",
-        use_container_width=True
-    ):
-
-        st.info(
-            "⚙️ Cài đặt sẽ được phát triển sau."
-        )
-
-
-# ==========================================
-# PHIÊN HIỆN TẠI
-# ==========================================
-
-current = st.session_state.sessions[
-    st.session_state.current_session
-]
-
-
-# ==========================================
-# CHAT HEADER
-# ==========================================
-
-st.markdown(
-    f"""<div class="chat-header">
-<div class="chat-title">🧠 MathDNA</div>
-<div class="chat-subtitle">{current["title"]}</div>
-</div>""",
-    unsafe_allow_html=True
-)
-
-
-# ==========================================
-# HIỂN THỊ KHÔNG GIAN CHAT
-# ==========================================
-
-if len(current["messages"]) == 0:
-
-    st.markdown(
-    """<div class="empty-chat">
-<div class="empty-icon">🧠</div>
-<div class="empty-title">Bắt đầu cuộc trò chuyện</div>
-<div class="empty-description">
-Gửi một bài toán, lời giải hoặc ảnh bài tập để MathDNA phân tích cách bạn đang tư duy.
-</div>
-</div>""",
-    unsafe_allow_html=True
-    )
-
-
-else:
-
-    for message in current["messages"]:
-
-        # ==============================
-        # USER
-        # ==============================
-
-        if message["role"] == "user":
-
-            with st.chat_message(
-                "user",
-                avatar="👤"
-            ):
-
-                st.markdown(
-                    '<div class="user-label">'
-                    'Bạn'
-                    '</div>',
-                    unsafe_allow_html=True
-                )
-
-                st.markdown(
-                    message["content"]
-                )
-
-                if "image" in message:
-
-                    st.image(
-                        message["image"],
-                        caption="📷 Bài toán",
-                        use_container_width=True
-                    )
-
-
-        # ==============================
-        # AI
-        # ==============================
-
-        else:
-
-            with st.chat_message(
-                "assistant",
-                avatar="🧠"
-            ):
-
-                st.markdown(
-                    '<div class="ai-label">'
-                    'MathDNA'
-                    '</div>',
-                    unsafe_allow_html=True
-                )
-
-                st.markdown(
-                    message["content"]
-                )
-
-
-# ==========================================
-# KHU VỰC ĐÍNH KÈM
-# ==========================================
-
-with st.expander(
-    "📎  Đính kèm ảnh hoặc chụp bài toán",
-    expanded=False
-):
-
     col1, col2 = st.columns(2)
-
 
     with col1:
 
-        uploaded_file = st.file_uploader(
-            "📎 Chọn ảnh",
-            type=[
-                "png",
-                "jpg",
-                "jpeg"
-            ]
+        st.markdown(
+            f"""
+            <div class="dna-card">
+
+                <div class="dna-label">
+                    Chỉ số tư duy
+                </div>
+
+                <div class="dna-score">
+                    {dna["overall"]}
+                </div>
+
+                <div class="dna-label">
+                    / 100
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
 
     with col2:
 
-        camera_image = st.camera_input(
-            "📷 Chụp ảnh"
+        st.markdown(
+            f"""
+            <div class="dna-card">
+
+                <div class="dna-label">
+                    Tiến bộ tuần này
+                </div>
+
+                <div class="dna-score">
+                    +{dna["week_progress"]}
+                </div>
+
+                <div class="dna-label">
+                    điểm
+                </div>
+
+            </div>
+            """,
+            unsafe_allow_html=True
         )
 
 
-# ==========================================
-# XÁC ĐỊNH ẢNH
-# ==========================================
-
-image_data = None
-
-
-if camera_image is not None:
-
-    image_data = camera_image.getvalue()
-
-
-elif uploaded_file is not None:
-
-    image_data = uploaded_file.getvalue()
-
-
-# ==========================================
-# XEM TRƯỚC ẢNH
-# ==========================================
-
-if image_data is not None:
+    # --------------------------------------
+    # NĂNG LỰC
+    # --------------------------------------
 
     st.markdown(
-        "#### 🖼️ Ảnh đã chọn"
+        '<div class="section-title">'
+        '📊 Năng lực'
+        '</div>',
+        unsafe_allow_html=True
     )
 
-    st.image(
-        image_data,
-        use_container_width=True
-    )
 
+    skills = {
 
-# ==========================================
-# Ô CHAT
-# ==========================================
+        "Đại số": dna["algebra"],
 
-user_input = st.chat_input(
-    "Nhập bài toán hoặc câu hỏi..."
-)
+        "Hình học": dna["geometry"],
 
+        "Hàm số": dna["functions"],
 
-# ==========================================
-# XỬ LÝ TIN NHẮN
-# ==========================================
+        "Suy luận": dna["reasoning"]
 
-if user_input:
-
-    # ------------------------------
-    # Đặt tên phiên
-    # ------------------------------
-
-    if len(current["messages"]) == 0:
-
-        title = user_input.strip()
-
-        if len(title) > 35:
-
-            title = title[:35] + "..."
-
-        current["title"] = title
-
-
-    # ------------------------------
-    # Tạo message
-    # ------------------------------
-
-    new_message = {
-        "role": "user",
-        "content": user_input
     }
 
 
-    # Lưu ảnh
+    for skill, value in skills.items():
 
-    if image_data is not None:
+        st.markdown(
+            f"**{skill}** · {value}/100"
+        )
 
-        new_message["image"] = image_data
+        st.progress(
+            value / 100
+        )
 
 
-    current["messages"].append(
-        new_message
+    # --------------------------------------
+    # TƯƠNG TÁC NĂNG LỰC
+    # --------------------------------------
+
+    selected_skill = st.selectbox(
+        "🔎 Xem chi tiết năng lực",
+        list(skills.keys())
     )
 
 
-    # ------------------------------
-    # Hiển thị user
-    # ------------------------------
+    if selected_skill == "Đại số":
 
-    with st.chat_message(
-        "user",
-        avatar="👤"
-    ):
+        description = (
+            "Khả năng xử lý phương trình và "
+            "biến đổi đại số đang khá tốt."
+        )
+
+    elif selected_skill == "Hình học":
+
+        description = (
+            "Cần tăng cường suy luận hình học "
+            "và khả năng liên kết giả thiết."
+        )
+
+    elif selected_skill == "Hàm số":
+
+        description = (
+            "Nắm được kiến thức cơ bản nhưng "
+            "cần luyện thêm bài vận dụng."
+        )
+
+    else:
+
+        description = (
+            "Đây là khu vực cần tập trung nhất. "
+            "Hãy luyện các bài yêu cầu nhiều bước "
+            "suy luận."
+        )
+
+
+    st.info(
+        f"📚 **{selected_skill}**\n\n"
+        f"{description}"
+    )
+
+
+    # --------------------------------------
+    # LỖI THƯỜNG GẶP
+    # --------------------------------------
+
+    st.markdown(
+        '<div class="section-title">'
+        '⚠️ Điểm cần cải thiện'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+    errors = dna["errors"]
+
+
+    for error, count in errors.items():
 
         st.markdown(
-            '<div class="user-label">Bạn</div>',
+            f"""
+            <div class="error-item">
+                ⚠️ <b>{error}</b>
+                <br>
+                <span style="opacity:.6">
+                    Phát hiện {count} lần
+                </span>
+            </div>
+            """,
             unsafe_allow_html=True
         )
 
-        st.markdown(
-            user_input
-        )
 
-        if image_data is not None:
-
-            st.image(
-                image_data,
-                caption="📷 Bài toán",
-                use_container_width=True
-            )
-
-
-    # ------------------------------
-    # AI DEMO
-    # ------------------------------
-
-    answer = (
-        "🧠 **MathDNA đã nhận được bài của bạn.**\n\n"
-        "📌 Tin nhắn đã được lưu vào phiên này.\n\n"
+    selected_error = st.selectbox(
+        "🔎 Chọn lỗi để luyện",
+        list(errors.keys())
     )
 
 
-    if image_data is not None:
-
-        answer += (
-            "📷 Ảnh bài toán cũng đã được lưu "
-            "cùng tin nhắn.\n\n"
-        )
-
-
-    answer += (
-        "🔜 Bộ phân tích Toán học sẽ được "
-        "kết nối ở bước tiếp theo."
+    st.warning(
+        f"🎯 **Đề xuất:** luyện thêm bài tập "
+        f"tập trung vào **{selected_error}**."
     )
 
 
-    with st.chat_message(
-        "assistant",
-        avatar="🧠"
+    if st.button(
+        "🎯 Luyện ngay",
+        use_container_width=True
     ):
 
+        st.session_state.practice_topic = (
+            selected_error
+        )
+
+        st.success(
+            f"Đã tạo phiên luyện tập: "
+            f"**{selected_error}**"
+        )
+
+
+    # --------------------------------------
+    # THỐNG KÊ
+    # --------------------------------------
+
+    st.markdown(
+        '<div class="section-title">'
+        '📈 Thành tích'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.metric(
+            "Bài đã làm",
+            dna["solved"]
+        )
+
+
+    with col2:
+
+        st.metric(
+            "Bài đúng",
+            dna["correct"]
+        )
+
+
+    # --------------------------------------
+    # GỢI Ý AI
+    # --------------------------------------
+
+    st.markdown(
+        '<div class="section-title">'
+        '🤖 MathDNA đề xuất'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+    st.info(
+        "Dựa trên dữ liệu hiện tại, bạn nên "
+        "tập trung vào **suy luận** và "
+        "**biến đổi dấu**."
+    )
+
+
+    if st.button(
+        "📚 Xem bài luyện đề xuất",
+        use_container_width=True
+    ):
+
+        st.write(
+            "🔜 Hệ thống bài luyện cá nhân "
+            "sẽ được kết nối ở phiên bản tiếp theo."
+        )
+
+
+# ==========================================
+# TRANG CHAT
+# ==========================================
+
+else:
+
+    st.title("💬 Trò chuyện")
+
+    st.caption(
+        "Khu vực chat MathDNA"
+    )
+
+
+    current = st.session_state.sessions[
+        st.session_state.current_session
+    ]
+
+
+    if len(current["messages"]) == 0:
+
         st.markdown(
-            '<div class="ai-label">MathDNA</div>',
+            """
+            <div class="dna-card"
+                 style="text-align:center;
+                        padding:60px 20px;">
+
+                <div style="font-size:45px;">
+                    🧠
+                </div>
+
+                <h2>
+                    Bắt đầu cuộc trò chuyện
+                </h2>
+
+                <p style="opacity:.6;">
+                    Gửi một bài toán hoặc ảnh bài tập
+                    để bắt đầu.
+                </p>
+
+            </div>
+            """,
             unsafe_allow_html=True
         )
 
-        st.markdown(
-            answer
+
+    else:
+
+        for message in current["messages"]:
+
+            with st.chat_message(
+                message["role"]
+            ):
+
+                st.markdown(
+                    message["content"]
+                )
+
+
+    user_input = st.chat_input(
+        "Nhập bài toán..."
+    )
+
+
+    if user_input:
+
+        current["messages"].append({
+            "role": "user",
+            "content": user_input
+        })
+
+
+        answer = (
+            "🧠 MathDNA đã nhận được câu hỏi.\n\n"
+            "Bộ phân tích AI sẽ được kết nối "
+            "sau khi hoàn thiện hệ thống DNA."
         )
 
 
-    # ------------------------------
-    # Lưu AI
-    # ------------------------------
-
-    current["messages"].append({
-        "role": "assistant",
-        "content": answer
-    })
+        current["messages"].append({
+            "role": "assistant",
+            "content": answer
+        })
 
 
-    st.rerun()
+        st.rerun()
