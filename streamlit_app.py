@@ -72,7 +72,7 @@ if user_input:
 
             try:
                 response = client.models.generate_content(
-                    model="gemini-3.7-flash",
+                    model="gemini-2.5-flash",
                     contents=user_input,
                     config=types.GenerateContentConfig(
                         system_instruction=MATHDNA_PROMPT
