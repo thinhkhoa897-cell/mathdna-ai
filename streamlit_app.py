@@ -14,19 +14,17 @@ st.set_page_config(
 
 
 # ==========================================
-# KHỞI TẠO CÁC PHIÊN
+# KHỞI TẠO PHIÊN
 # ==========================================
 
 if "sessions" not in st.session_state:
 
     st.session_state.sessions = {
-
         "session_1": {
             "title": "Cuộc trò chuyện mới",
             "created": datetime.now().strftime("%H:%M"),
             "messages": []
         }
-
     }
 
 
@@ -36,7 +34,7 @@ if "current_session" not in st.session_state:
 
 
 # ==========================================
-# HÀM TẠO PHIÊN MỚI
+# TẠO PHIÊN MỚI
 # ==========================================
 
 def create_new_session():
@@ -46,34 +44,29 @@ def create_new_session():
     session_id = f"session_{number}"
 
     st.session_state.sessions[session_id] = {
-
         "title": "Cuộc trò chuyện mới",
-
         "created": datetime.now().strftime("%H:%M"),
-
         "messages": []
-
     }
 
     st.session_state.current_session = session_id
 
 
 # ==========================================
-# HÀM XÓA PHIÊN
+# XÓA PHIÊN
 # ==========================================
 
 def delete_session(session_id):
 
     if len(st.session_state.sessions) <= 1:
 
-        st.session_state.sessions[session_id]["messages"] = []
-
-        st.session_state.sessions[session_id][
-            "title"
-        ] = "Cuộc trò chuyện mới"
+        st.session_state.sessions[session_id] = {
+            "title": "Cuộc trò chuyện mới",
+            "created": datetime.now().strftime("%H:%M"),
+            "messages": []
+        }
 
         return
-
 
     del st.session_state.sessions[session_id]
 
@@ -94,9 +87,6 @@ with st.sidebar:
 
     st.divider()
 
-
-    # Nút tạo phiên mới
-
     if st.button(
         "＋ Cuộc trò chuyện mới",
         use_container_width=True
@@ -106,33 +96,18 @@ with st.sidebar:
 
         st.rerun()
 
-
     st.divider()
 
     st.markdown("### 💬 Cuộc trò chuyện")
-
-
-    # Danh sách phiên
 
     for session_id, session in (
         st.session_state.sessions.items()
     ):
 
-        is_current = (
-            session_id ==
-            st.session_state.current_session
-        )
-
-
-        # Tên hiển thị
-
         title = session["title"]
 
-
-        if is_current:
-
+        if session_id == st.session_state.current_session:
             title = "🔵 " + title
-
 
         if st.button(
             title,
@@ -140,17 +115,11 @@ with st.sidebar:
             use_container_width=True
         ):
 
-            st.session_state.current_session = (
-                session_id
-            )
+            st.session_state.current_session = session_id
 
             st.rerun()
 
-
     st.divider()
-
-
-    # Xóa phiên hiện tại
 
     if st.button(
         "🗑️ Xóa phiên hiện tại",
@@ -165,7 +134,7 @@ with st.sidebar:
 
 
 # ==========================================
-# LẤY PHIÊN HIỆN TẠI
+# PHIÊN HIỆN TẠI
 # ==========================================
 
 current = st.session_state.sessions[
@@ -174,80 +143,91 @@ current = st.session_state.sessions[
 
 
 # ==========================================
-# TIÊU ĐỀ
+# HEADER
 # ==========================================
 
 st.title("🧠 MathDNA AI")
 
-st.caption(
-    current["title"]
-)
+st.caption(current["title"])
 
 
 # ==========================================
-# HIỂN THỊ LỊCH SỬ
+# LỊCH SỬ
 # ==========================================
 
 for message in current["messages"]:
 
-    with st.chat_message(
-        message["role"]
-    ):
+    with st.chat_message(message["role"]):
 
-        st.markdown(
-            message["content"]
+        st.markdown(message["content"])
+
+        if "image" in message:
+
+            st.image(
+                message["image"],
+                caption="📷 Bài toán",
+                use_container_width=True
+            )
+
+
+# ==========================================
+# KHU VỰC NHẬP ẢNH
+# ==========================================
+
+with st.expander(
+    "📎 Đính kèm ảnh hoặc chụp bài toán",
+    expanded=False
+):
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        uploaded_file = st.file_uploader(
+            "📎 Chọn ảnh",
+            type=[
+                "png",
+                "jpg",
+                "jpeg"
+            ],
+            label_visibility="visible"
+        )
+
+    with col2:
+
+        camera_image = st.camera_input(
+            "📷 Chụp ảnh",
+            label_visibility="visible"
         )
 
 
 # ==========================================
-# KHU VỰC ẢNH
+# XÁC ĐỊNH ẢNH
 # ==========================================
 
-st.markdown("### 📷 Đưa bài toán vào")
+image_data = None
 
-
-col1, col2 = st.columns(2)
-
-
-with col1:
-
-    uploaded_file = st.file_uploader(
-        "📎 Chọn ảnh",
-        type=[
-            "png",
-            "jpg",
-            "jpeg"
-        ],
-        label_visibility="visible"
-    )
-
-
-with col2:
-
-    camera_image = st.camera_input(
-        "📷 Chụp ảnh",
-        label_visibility="visible"
-    )
-
-
-# ==========================================
-# HIỂN THỊ ẢNH
-# ==========================================
 
 if camera_image is not None:
 
-    st.image(
-        camera_image,
-        caption="Ảnh bài toán",
-        use_container_width=True
-    )
+    image_data = camera_image.getvalue()
 
 
 elif uploaded_file is not None:
 
+    image_data = uploaded_file.getvalue()
+
+
+# ==========================================
+# XEM TRƯỚC ẢNH
+# ==========================================
+
+if image_data is not None:
+
+    st.markdown("#### 🖼️ Ảnh đã chọn")
+
     st.image(
-        uploaded_file,
-        caption="Ảnh bài toán",
+        image_data,
         use_container_width=True
     )
 
@@ -262,95 +242,97 @@ user_input = st.chat_input(
 
 
 # ==========================================
-# XỬ LÝ TIN NHẮN
+# XỬ LÝ
 # ==========================================
 
 if user_input:
 
-    # -------------------------------
-    # Đặt tên phiên
-    # -------------------------------
+    # --------------------------------------
+    # TẠO TÊN PHIÊN
+    # --------------------------------------
 
     if len(current["messages"]) == 0:
 
-        short_title = user_input.strip()
+        title = user_input.strip()
 
-        if len(short_title) > 35:
+        if len(title) > 35:
 
-            short_title = (
-                short_title[:35] + "..."
-            )
+            title = title[:35] + "..."
 
-        current["title"] = short_title
+        current["title"] = title
 
 
-    # -------------------------------
-    # Lưu câu hỏi
-    # -------------------------------
+    # --------------------------------------
+    # TẠO TIN NHẮN
+    # --------------------------------------
 
-    current["messages"].append({
-
+    new_message = {
         "role": "user",
-
         "content": user_input
+    }
 
-    })
+
+    # Lưu ảnh cùng tin nhắn
+
+    if image_data is not None:
+
+        new_message["image"] = image_data
 
 
-    # -------------------------------
-    # Hiển thị câu hỏi
-    # -------------------------------
+    current["messages"].append(new_message)
+
+
+    # --------------------------------------
+    # HIỂN THỊ
+    # --------------------------------------
 
     with st.chat_message("user"):
 
         st.markdown(user_input)
 
-
-        if camera_image is not None:
+        if image_data is not None:
 
             st.image(
-                camera_image,
+                image_data,
                 caption="📷 Bài toán",
                 use_container_width=True
             )
 
 
-        elif uploaded_file is not None:
+    # --------------------------------------
+    # DEMO AI
+    # --------------------------------------
 
-            st.image(
-                uploaded_file,
-                caption="📎 Bài toán",
-                use_container_width=True
-            )
+    answer = (
+        "🧠 **MathDNA đã nhận được bài của bạn.**\n\n"
+        "📌 Tin nhắn đã được lưu vào phiên này.\n\n"
+    )
 
+    if image_data is not None:
 
-    # -------------------------------
-    # PHẢN HỒI DEMO
-    # -------------------------------
+        answer += (
+            "📷 Ảnh bài toán cũng đã được lưu "
+            "cùng tin nhắn.\n\n"
+        )
+
+    answer += (
+        "🔜 Bước tiếp theo sẽ kết nối "
+        "bộ phân tích Toán học."
+    )
+
 
     with st.chat_message("assistant"):
-
-        answer = (
-            "🧠 **MathDNA đã nhận được câu hỏi.**\n\n"
-            "Hiện tại đây là chế độ giao diện V1. "
-            "Bộ não AI sẽ được kết nối vào bước tiếp theo.\n\n"
-            "📌 Câu hỏi của bạn:\n\n"
-            f"> {user_input}"
-        )
 
         st.markdown(answer)
 
 
-    # -------------------------------
-    # Lưu phản hồi
-    # -------------------------------
+    # --------------------------------------
+    # LƯU AI
+    # --------------------------------------
 
     current["messages"].append({
-
         "role": "assistant",
-
         "content": answer
-
     })
 
 
