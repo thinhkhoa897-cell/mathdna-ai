@@ -375,26 +375,14 @@ st.markdown(
 if len(current["messages"]) == 0:
 
     st.markdown(
-        """
-        <div class="empty-chat">
-
-            <div class="empty-icon">
-                🧠
-            </div>
-
-            <div class="empty-title">
-                Bắt đầu cuộc trò chuyện
-            </div>
-
-            <div class="empty-description">
-                Gửi một bài toán, lời giải hoặc
-                ảnh bài tập để MathDNA phân tích
-                cách bạn đang tư duy.
-            </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
+    """<div class="empty-chat">
+<div class="empty-icon">🧠</div>
+<div class="empty-title">Bắt đầu cuộc trò chuyện</div>
+<div class="empty-description">
+Gửi một bài toán, lời giải hoặc ảnh bài tập để MathDNA phân tích cách bạn đang tư duy.
+</div>
+</div>""",
+    unsafe_allow_html=True
     )
 
 
