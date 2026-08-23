@@ -14,6 +14,138 @@ st.set_page_config(
 
 
 # ==========================================
+# CSS
+# ==========================================
+
+st.markdown("""
+<style>
+
+/* ==============================
+   SIDEBAR
+   ============================== */
+
+[data-testid="stSidebar"] {
+    background-color: #f7f7f8;
+}
+
+[data-testid="stSidebar"] > div:first-child {
+    padding-top: 1.5rem;
+}
+
+.mathdna-logo {
+    font-size: 25px;
+    font-weight: 700;
+    margin-bottom: 2px;
+}
+
+.mathdna-subtitle {
+    font-size: 13px;
+    opacity: 0.65;
+    margin-bottom: 18px;
+}
+
+.sidebar-section {
+    font-size: 11px;
+    font-weight: 700;
+    opacity: 0.55;
+    margin-top: 18px;
+    margin-bottom: 7px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+
+/* ==============================
+   CHAT HEADER
+   ============================== */
+
+.chat-header {
+    padding: 8px 4px 14px 4px;
+    border-bottom: 1px solid rgba(128,128,128,0.2);
+    margin-bottom: 20px;
+}
+
+.chat-title {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.chat-subtitle {
+    font-size: 12px;
+    opacity: 0.55;
+}
+
+
+/* ==============================
+   EMPTY CHAT
+   ============================== */
+
+.empty-chat {
+    text-align: center;
+    padding-top: 90px;
+    padding-bottom: 80px;
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+}
+
+.empty-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+.empty-description {
+    font-size: 14px;
+    opacity: 0.6;
+    max-width: 350px;
+    margin: auto;
+}
+
+
+/* ==============================
+   MESSAGE LABEL
+   ============================== */
+
+.user-label {
+    text-align: right;
+    font-size: 11px;
+    opacity: 0.5;
+    margin-bottom: 3px;
+}
+
+.ai-label {
+    font-size: 11px;
+    opacity: 0.5;
+    margin-bottom: 3px;
+}
+
+
+/* ==============================
+   IMAGE PREVIEW
+   ============================== */
+
+.image-preview {
+    border-radius: 14px;
+    margin-top: 8px;
+}
+
+
+/* ==============================
+   CHAT INPUT
+   ============================== */
+
+[data-testid="stChatInput"] {
+    margin-top: 10px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+
+# ==========================================
 # KHỞI TẠO PHIÊN
 # ==========================================
 
@@ -75,55 +207,13 @@ def delete_session(session_id):
     )
 
 
-# # ==========================================
-# SIDEBAR MATHDNA
 # ==========================================
-
-st.markdown("""
-<style>
-
-    /* Sidebar tổng thể */
-    [data-testid="stSidebar"] {
-        background-color: #f7f7f8;
-    }
-
-    [data-testid="stSidebar"] > div:first-child {
-        padding-top: 1.5rem;
-    }
-
-    /* Tiêu đề */
-    .mathdna-logo {
-        font-size: 25px;
-        font-weight: 700;
-        margin-bottom: 2px;
-    }
-
-    .mathdna-subtitle {
-        font-size: 13px;
-        opacity: 0.65;
-        margin-bottom: 18px;
-    }
-
-    /* Tiêu đề nhóm */
-    .sidebar-section {
-        font-size: 11px;
-        font-weight: 700;
-        opacity: 0.55;
-        margin-top: 18px;
-        margin-bottom: 7px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-</style>
-""", unsafe_allow_html=True)
-
+# SIDEBAR
+# ==========================================
 
 with st.sidebar:
 
-    # --------------------------------------
-    # LOGO
-    # --------------------------------------
+    # Logo
 
     st.markdown(
         '<div class="mathdna-logo">🧠 MathDNA</div>',
@@ -138,9 +228,7 @@ with st.sidebar:
     )
 
 
-    # --------------------------------------
-    # TẠO CUỘC TRÒ CHUYỆN MỚI
-    # --------------------------------------
+    # Cuộc trò chuyện mới
 
     if st.button(
         "＋  Cuộc trò chuyện mới",
@@ -152,9 +240,7 @@ with st.sidebar:
         st.rerun()
 
 
-    # --------------------------------------
-    # TÌM KIẾM
-    # --------------------------------------
+    # Tìm kiếm
 
     search_text = st.text_input(
         "🔍",
@@ -163,9 +249,13 @@ with st.sidebar:
     )
 
 
-    # --------------------------------------
-    # LỌC PHIÊN
-    # --------------------------------------
+    st.markdown(
+        '<div class="sidebar-section">📚 Cuộc trò chuyện</div>',
+        unsafe_allow_html=True
+    )
+
+
+    # Lọc danh sách
 
     sessions = list(
         st.session_state.sessions.items()
@@ -182,20 +272,9 @@ with st.sidebar:
         ]
 
 
-    # --------------------------------------
-    # HÔM NAY
-    # --------------------------------------
-
-    st.markdown(
-        '<div class="sidebar-section">📚 Hôm nay</div>',
-        unsafe_allow_html=True
-    )
-
+    # Hiển thị danh sách
 
     for session_id, session in sessions:
-
-        # Chỉ hiển thị phiên hôm nay
-        # vì hiện tại chúng ta chưa lưu ngày riêng
 
         is_current = (
             session_id ==
@@ -229,17 +308,24 @@ with st.sidebar:
             st.rerun()
 
 
-    # --------------------------------------
-    # PHẦN CUỐI SIDEBAR
-    # --------------------------------------
-
-    st.markdown(
-        "<br>",
-        unsafe_allow_html=True
-    )
-
     st.divider()
 
+
+    # Xóa
+
+    if st.button(
+        "🗑️  Xóa phiên hiện tại",
+        use_container_width=True
+    ):
+
+        delete_session(
+            st.session_state.current_session
+        )
+
+        st.rerun()
+
+
+    # Cài đặt
 
     if st.button(
         "⚙️  Cài đặt",
@@ -247,8 +333,9 @@ with st.sidebar:
     ):
 
         st.info(
-            "⚙️ Phần cài đặt sẽ được phát triển sau."
+            "⚙️ Cài đặt sẽ được phát triển sau."
         )
+
 
 # ==========================================
 # PHIÊN HIỆN TẠI
@@ -260,43 +347,126 @@ current = st.session_state.sessions[
 
 
 # ==========================================
-# HEADER
+# CHAT HEADER
 # ==========================================
 
-st.title("🧠 MathDNA AI")
+st.markdown(
+    f"""
+    <div class="chat-header">
 
-st.caption(current["title"])
+        <div class="chat-title">
+            🧠 MathDNA
+        </div>
 
+        <div class="chat-subtitle">
+            {current["title"]}
+        </div>
 
-# ==========================================
-# LỊCH SỬ
-# ==========================================
-
-for message in current["messages"]:
-
-    with st.chat_message(message["role"]):
-
-        st.markdown(message["content"])
-
-        if "image" in message:
-
-            st.image(
-                message["image"],
-                caption="📷 Bài toán",
-                use_container_width=True
-            )
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # ==========================================
-# KHU VỰC NHẬP ẢNH
+# HIỂN THỊ KHÔNG GIAN CHAT
+# ==========================================
+
+if len(current["messages"]) == 0:
+
+    st.markdown(
+        """
+        <div class="empty-chat">
+
+            <div class="empty-icon">
+                🧠
+            </div>
+
+            <div class="empty-title">
+                Bắt đầu cuộc trò chuyện
+            </div>
+
+            <div class="empty-description">
+                Gửi một bài toán, lời giải hoặc
+                ảnh bài tập để MathDNA phân tích
+                cách bạn đang tư duy.
+            </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+
+else:
+
+    for message in current["messages"]:
+
+        # ==============================
+        # USER
+        # ==============================
+
+        if message["role"] == "user":
+
+            with st.chat_message(
+                "user",
+                avatar="👤"
+            ):
+
+                st.markdown(
+                    '<div class="user-label">'
+                    'Bạn'
+                    '</div>',
+                    unsafe_allow_html=True
+                )
+
+                st.markdown(
+                    message["content"]
+                )
+
+                if "image" in message:
+
+                    st.image(
+                        message["image"],
+                        caption="📷 Bài toán",
+                        use_container_width=True
+                    )
+
+
+        # ==============================
+        # AI
+        # ==============================
+
+        else:
+
+            with st.chat_message(
+                "assistant",
+                avatar="🧠"
+            ):
+
+                st.markdown(
+                    '<div class="ai-label">'
+                    'MathDNA'
+                    '</div>',
+                    unsafe_allow_html=True
+                )
+
+                st.markdown(
+                    message["content"]
+                )
+
+
+# ==========================================
+# KHU VỰC ĐÍNH KÈM
 # ==========================================
 
 with st.expander(
-    "📎 Đính kèm ảnh hoặc chụp bài toán",
+    "📎  Đính kèm ảnh hoặc chụp bài toán",
     expanded=False
 ):
 
     col1, col2 = st.columns(2)
+
 
     with col1:
 
@@ -306,15 +476,14 @@ with st.expander(
                 "png",
                 "jpg",
                 "jpeg"
-            ],
-            label_visibility="visible"
+            ]
         )
+
 
     with col2:
 
         camera_image = st.camera_input(
-            "📷 Chụp ảnh",
-            label_visibility="visible"
+            "📷 Chụp ảnh"
         )
 
 
@@ -341,7 +510,9 @@ elif uploaded_file is not None:
 
 if image_data is not None:
 
-    st.markdown("#### 🖼️ Ảnh đã chọn")
+    st.markdown(
+        "#### 🖼️ Ảnh đã chọn"
+    )
 
     st.image(
         image_data,
@@ -359,14 +530,14 @@ user_input = st.chat_input(
 
 
 # ==========================================
-# XỬ LÝ
+# XỬ LÝ TIN NHẮN
 # ==========================================
 
 if user_input:
 
-    # --------------------------------------
-    # TẠO TÊN PHIÊN
-    # --------------------------------------
+    # ------------------------------
+    # Đặt tên phiên
+    # ------------------------------
 
     if len(current["messages"]) == 0:
 
@@ -379,9 +550,9 @@ if user_input:
         current["title"] = title
 
 
-    # --------------------------------------
-    # TẠO TIN NHẮN
-    # --------------------------------------
+    # ------------------------------
+    # Tạo message
+    # ------------------------------
 
     new_message = {
         "role": "user",
@@ -389,23 +560,35 @@ if user_input:
     }
 
 
-    # Lưu ảnh cùng tin nhắn
+    # Lưu ảnh
 
     if image_data is not None:
 
         new_message["image"] = image_data
 
 
-    current["messages"].append(new_message)
+    current["messages"].append(
+        new_message
+    )
 
 
-    # --------------------------------------
-    # HIỂN THỊ
-    # --------------------------------------
+    # ------------------------------
+    # Hiển thị user
+    # ------------------------------
 
-    with st.chat_message("user"):
+    with st.chat_message(
+        "user",
+        avatar="👤"
+    ):
 
-        st.markdown(user_input)
+        st.markdown(
+            '<div class="user-label">Bạn</div>',
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            user_input
+        )
 
         if image_data is not None:
 
@@ -416,14 +599,15 @@ if user_input:
             )
 
 
-    # --------------------------------------
-    # DEMO AI
-    # --------------------------------------
+    # ------------------------------
+    # AI DEMO
+    # ------------------------------
 
     answer = (
         "🧠 **MathDNA đã nhận được bài của bạn.**\n\n"
         "📌 Tin nhắn đã được lưu vào phiên này.\n\n"
     )
+
 
     if image_data is not None:
 
@@ -432,20 +616,31 @@ if user_input:
             "cùng tin nhắn.\n\n"
         )
 
+
     answer += (
-        "🔜 Bước tiếp theo sẽ kết nối "
-        "bộ phân tích Toán học."
+        "🔜 Bộ phân tích Toán học sẽ được "
+        "kết nối ở bước tiếp theo."
     )
 
 
-    with st.chat_message("assistant"):
+    with st.chat_message(
+        "assistant",
+        avatar="🧠"
+    ):
 
-        st.markdown(answer)
+        st.markdown(
+            '<div class="ai-label">MathDNA</div>',
+            unsafe_allow_html=True
+        )
+
+        st.markdown(
+            answer
+        )
 
 
-    # --------------------------------------
-    # LƯU AI
-    # --------------------------------------
+    # ------------------------------
+    # Lưu AI
+    # ------------------------------
 
     current["messages"].append({
         "role": "assistant",
