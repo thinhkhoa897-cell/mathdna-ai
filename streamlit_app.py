@@ -351,19 +351,10 @@ current = st.session_state.sessions[
 # ==========================================
 
 st.markdown(
-    f"""
-    <div class="chat-header">
-
-        <div class="chat-title">
-            🧠 MathDNA
-        </div>
-
-        <div class="chat-subtitle">
-            {current["title"]}
-        </div>
-
-    </div>
-    """,
+    f"""<div class="chat-header">
+<div class="chat-title">🧠 MathDNA</div>
+<div class="chat-subtitle">{current["title"]}</div>
+</div>""",
     unsafe_allow_html=True
 )
 
