@@ -71,13 +71,33 @@ if user_input:
         with st.spinner("🧠 MathDNA đang phân tích..."):
 
             try:
-                response = client.models.generate_content(
-                    model="gemini-3.6-flash",
-                    contents=user_input,
-                    config=types.GenerateContentConfig(
-                        system_instruction=MATHDNA_PROMPT
-                    )
-                )
+                # Tạo lịch sử để gửi cho Gemini
+conversation = []
+
+for message in st.session_state.messages:
+    if message["role"] == "user":
+        conversation.append(
+            f"HỌC SINH: {message['content']}"
+        )
+    elif message["role"] == "assistant":
+        conversation.append(
+            f"MATHDNA: {message['content']}"
+        )
+
+# Thêm câu hỏi hiện tại
+conversation.append(
+    f"HỌC SINH: {user_input}"
+)
+
+conversation_text = "\n\n".join(conversation)
+
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents=conversation_text,
+    config=types.GenerateContentConfig(
+        system_instruction=MATHDNA_PROMPT
+    )
+)
 
                 answer = response.text
 
