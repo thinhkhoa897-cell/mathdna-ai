@@ -322,7 +322,7 @@ hãy kiểm tra từng bước và tìm lỗi sai đầu tiên.
 
                 response = client.models.generate_content(
 
-                    model="gemini-2.5-flash",
+                    model="gemini-3.6-flash",
 
                     contents=contents,
 
