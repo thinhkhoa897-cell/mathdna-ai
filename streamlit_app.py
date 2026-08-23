@@ -1,6 +1,5 @@
 import streamlit as st
-from google import genai
-from google.genai import types
+from datetime import datetime
 
 
 # ==========================================
@@ -15,93 +14,173 @@ st.set_page_config(
 
 
 # ==========================================
-# KẾT NỐI GEMINI
+# KHỞI TẠO CÁC PHIÊN
 # ==========================================
 
-client = genai.Client(
-    api_key=st.secrets["GEMINI_API_KEY"]
-)
+if "sessions" not in st.session_state:
+
+    st.session_state.sessions = {
+
+        "session_1": {
+            "title": "Cuộc trò chuyện mới",
+            "created": datetime.now().strftime("%H:%M"),
+            "messages": []
+        }
+
+    }
 
 
-# ==========================================
-# BỘ NÃO MATHDNA
-# ==========================================
+if "current_session" not in st.session_state:
 
-MATHDNA_PROMPT = """
-Bạn là MathDNA AI, trợ lý Toán học dành cho học sinh THCS.
-
-Mục tiêu của bạn không chỉ là giải bài,
-mà phải giúp học sinh hiểu cách mình đang tư duy.
-
-Bạn phải sử dụng lịch sử cuộc trò chuyện để hiểu
-những câu như:
-- bài trên
-- bước đó
-- tại sao?
-- tiếp theo làm gì?
-- câu này
-- cách làm vừa rồi
-
-KHI NHẬN BÀI TOÁN:
-
-1. Xác định dạng toán.
-2. Xác định kiến thức cần dùng.
-3. Phân tích dữ kiện.
-4. Đưa ra hướng suy nghĩ.
-
-KHI NHẬN LỜI GIẢI CỦA HỌC SINH:
-
-1. Kiểm tra từng bước.
-2. Tìm lỗi sai đầu tiên.
-3. Xác định vị trí lỗi.
-4. Phân loại lỗi:
-
-- Sai dấu
-- Sai tính toán
-- Sai công thức
-- Sai biến đổi
-- Thiếu điều kiện
-- Hiểu sai đề
-- Sai logic
-
-5. Giải thích nguyên nhân.
-6. Đưa gợi ý để học sinh tự sửa.
-
-KHI NHẬN ẢNH:
-
-- Đọc nội dung bài toán trong ảnh.
-- Nếu ảnh không rõ, nói rõ phần nào không đọc được.
-- Không tự bịa dữ kiện.
-- Sau khi đọc, phân tích bài toán như bình thường.
-
-NGUYÊN TẮC:
-
-- Không vội đưa đáp án.
-- Ưu tiên gợi ý.
-- Phù hợp với học sinh THCS.
-- Nếu học sinh yêu cầu lời giải hoàn chỉnh thì mới trình bày đầy đủ.
-
-Hãy ghi nhận các lỗi của học sinh để sau này
-có thể xây dựng hồ sơ MathDNA.
-"""
+    st.session_state.current_session = "session_1"
 
 
 # ==========================================
-# KHỞI TẠO LỊCH SỬ
+# HÀM TẠO PHIÊN MỚI
 # ==========================================
 
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+def create_new_session():
+
+    number = len(st.session_state.sessions) + 1
+
+    session_id = f"session_{number}"
+
+    st.session_state.sessions[session_id] = {
+
+        "title": "Cuộc trò chuyện mới",
+
+        "created": datetime.now().strftime("%H:%M"),
+
+        "messages": []
+
+    }
+
+    st.session_state.current_session = session_id
 
 
 # ==========================================
-# GIAO DIỆN
+# HÀM XÓA PHIÊN
+# ==========================================
+
+def delete_session(session_id):
+
+    if len(st.session_state.sessions) <= 1:
+
+        st.session_state.sessions[session_id]["messages"] = []
+
+        st.session_state.sessions[session_id][
+            "title"
+        ] = "Cuộc trò chuyện mới"
+
+        return
+
+
+    del st.session_state.sessions[session_id]
+
+    st.session_state.current_session = (
+        list(st.session_state.sessions.keys())[0]
+    )
+
+
+# ==========================================
+# SIDEBAR
+# ==========================================
+
+with st.sidebar:
+
+    st.title("🧠 MathDNA")
+
+    st.caption("Không gian học Toán của bạn")
+
+    st.divider()
+
+
+    # Nút tạo phiên mới
+
+    if st.button(
+        "＋ Cuộc trò chuyện mới",
+        use_container_width=True
+    ):
+
+        create_new_session()
+
+        st.rerun()
+
+
+    st.divider()
+
+    st.markdown("### 💬 Cuộc trò chuyện")
+
+
+    # Danh sách phiên
+
+    for session_id, session in (
+        st.session_state.sessions.items()
+    ):
+
+        is_current = (
+            session_id ==
+            st.session_state.current_session
+        )
+
+
+        # Tên hiển thị
+
+        title = session["title"]
+
+
+        if is_current:
+
+            title = "🔵 " + title
+
+
+        if st.button(
+            title,
+            key=f"open_{session_id}",
+            use_container_width=True
+        ):
+
+            st.session_state.current_session = (
+                session_id
+            )
+
+            st.rerun()
+
+
+    st.divider()
+
+
+    # Xóa phiên hiện tại
+
+    if st.button(
+        "🗑️ Xóa phiên hiện tại",
+        use_container_width=True
+    ):
+
+        delete_session(
+            st.session_state.current_session
+        )
+
+        st.rerun()
+
+
+# ==========================================
+# LẤY PHIÊN HIỆN TẠI
+# ==========================================
+
+current = st.session_state.sessions[
+    st.session_state.current_session
+]
+
+
+# ==========================================
+# TIÊU ĐỀ
 # ==========================================
 
 st.title("🧠 MathDNA AI")
 
 st.caption(
-    "Trợ lý giúp bạn hiểu cách mình đang tư duy Toán"
+    current["title"]
 )
 
 
@@ -109,25 +188,36 @@ st.caption(
 # HIỂN THỊ LỊCH SỬ
 # ==========================================
 
-for message in st.session_state.messages:
+for message in current["messages"]:
 
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+    with st.chat_message(
+        message["role"]
+    ):
+
+        st.markdown(
+            message["content"]
+        )
 
 
 # ==========================================
-# NHẬP ẢNH
+# KHU VỰC ẢNH
 # ==========================================
 
-st.markdown("### 📷 Đưa bài toán vào MathDNA")
+st.markdown("### 📷 Đưa bài toán vào")
+
 
 col1, col2 = st.columns(2)
+
 
 with col1:
 
     uploaded_file = st.file_uploader(
         "📎 Chọn ảnh",
-        type=["png", "jpg", "jpeg"],
+        type=[
+            "png",
+            "jpg",
+            "jpeg"
+        ],
         label_visibility="visible"
     )
 
@@ -144,13 +234,7 @@ with col2:
 # HIỂN THỊ ẢNH
 # ==========================================
 
-image_data = None
-image_type = None
-
 if camera_image is not None:
-
-    image_data = camera_image.getvalue()
-    image_type = camera_image.type
 
     st.image(
         camera_image,
@@ -161,9 +245,6 @@ if camera_image is not None:
 
 elif uploaded_file is not None:
 
-    image_data = uploaded_file.getvalue()
-    image_type = uploaded_file.type
-
     st.image(
         uploaded_file,
         caption="Ảnh bài toán",
@@ -172,7 +253,7 @@ elif uploaded_file is not None:
 
 
 # ==========================================
-# Ô NHẬP CÂU HỎI
+# Ô CHAT
 # ==========================================
 
 user_input = st.chat_input(
@@ -181,180 +262,96 @@ user_input = st.chat_input(
 
 
 # ==========================================
-# NÚT PHÂN TÍCH ẢNH
+# XỬ LÝ TIN NHẮN
 # ==========================================
 
-analyze_image = False
+if user_input:
 
-if image_data is not None:
+    # -------------------------------
+    # Đặt tên phiên
+    # -------------------------------
 
-    analyze_image = st.button(
-        "🧠 Phân tích bài toán trong ảnh",
-        use_container_width=True
-    )
+    if len(current["messages"]) == 0:
 
+        short_title = user_input.strip()
 
-# ==========================================
-# XÁC ĐỊNH CÓ YÊU CẦU MỚI HAY KHÔNG
-# ==========================================
+        if len(short_title) > 35:
 
-has_text = user_input is not None and user_input.strip() != ""
+            short_title = (
+                short_title[:35] + "..."
+            )
 
-has_request = has_text or analyze_image
-
-
-if has_request:
-
-    # ======================================
-    # CÂU HỎI HIỆN TẠI
-    # ======================================
-
-    if has_text:
-
-        current_question = user_input
-
-    else:
-
-        current_question = (
-            "Hãy đọc bài toán trong ảnh và "
-            "phân tích nó cho tôi."
-        )
+        current["title"] = short_title
 
 
-    # ======================================
-    # LƯU CÂU HỎI
-    # ======================================
+    # -------------------------------
+    # Lưu câu hỏi
+    # -------------------------------
 
-    st.session_state.messages.append({
+    current["messages"].append({
+
         "role": "user",
-        "content": current_question
+
+        "content": user_input
+
     })
 
 
+    # -------------------------------
     # Hiển thị câu hỏi
+    # -------------------------------
 
     with st.chat_message("user"):
 
-        st.markdown(current_question)
+        st.markdown(user_input)
 
-        if image_data is not None:
+
+        if camera_image is not None:
 
             st.image(
-                image_data,
+                camera_image,
                 caption="📷 Bài toán",
                 use_container_width=True
             )
 
 
-    # ======================================
-    # TẠO LỊCH SỬ
-    # ======================================
+        elif uploaded_file is not None:
 
-    conversation = []
-
-    for message in st.session_state.messages:
-
-        if message["role"] == "user":
-
-            conversation.append(
-                "HỌC SINH: " + message["content"]
-            )
-
-        else:
-
-            conversation.append(
-                "MATHDNA: " + message["content"]
+            st.image(
+                uploaded_file,
+                caption="📎 Bài toán",
+                use_container_width=True
             )
 
 
-    conversation_text = "\n\n".join(
-        conversation
-    )
-
-
-    # ======================================
-    # CHUẨN BỊ NỘI DUNG GỬI GEMINI
-    # ======================================
-
-    contents = []
-
-    # Lịch sử
-    contents.append(conversation_text)
-
-
-    # Ảnh
-    if image_data is not None:
-
-        contents.append(
-            types.Part.from_bytes(
-                data=image_data,
-                mime_type=image_type
-            )
-        )
-
-        contents.append(
-            """
-Hãy đọc kỹ ảnh bài toán.
-
-Nếu có đề bài, hãy:
-1. Chép lại nội dung chính.
-2. Xác định dạng toán.
-3. Phân tích dữ kiện.
-4. Đưa hướng giải phù hợp.
-
-Nếu ảnh chứa lời giải của học sinh,
-hãy kiểm tra từng bước và tìm lỗi sai đầu tiên.
-"""
-        )
-
-
-    # ======================================
-    # GỌI GEMINI
-    # ======================================
+    # -------------------------------
+    # PHẢN HỒI DEMO
+    # -------------------------------
 
     with st.chat_message("assistant"):
 
-        with st.spinner(
-            "🧠 MathDNA đang phân tích..."
-        ):
-
-            try:
-
-                response = client.models.generate_content(
-
-                    model="gemini-3.6-flash",
-
-                    contents=contents,
-
-                    config=types.GenerateContentConfig(
-
-                        system_instruction=
-                        MATHDNA_PROMPT
-                    )
-                )
-
-                answer = response.text
-
-
-            except Exception as e:
-
-                answer = (
-                    "⚠️ Có lỗi khi kết nối với AI.\n\n"
-                    f"`{str(e)}`"
-                )
-
+        answer = (
+            "🧠 **MathDNA đã nhận được câu hỏi.**\n\n"
+            "Hiện tại đây là chế độ giao diện V1. "
+            "Bộ não AI sẽ được kết nối vào bước tiếp theo.\n\n"
+            "📌 Câu hỏi của bạn:\n\n"
+            f"> {user_input}"
+        )
 
         st.markdown(answer)
 
 
-    # ======================================
-    # LƯU PHẢN HỒI
-    # ======================================
+    # -------------------------------
+    # Lưu phản hồi
+    # -------------------------------
 
-    st.session_state.messages.append({
+    current["messages"].append({
 
         "role": "assistant",
 
         "content": answer
 
     })
+
+
+    st.rerun()
