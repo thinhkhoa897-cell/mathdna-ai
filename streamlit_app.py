@@ -75,20 +75,75 @@ def delete_session(session_id):
     )
 
 
+# # ==========================================
+# SIDEBAR MATHDNA
 # ==========================================
-# SIDEBAR
-# ==========================================
+
+st.markdown("""
+<style>
+
+    /* Sidebar tổng thể */
+    [data-testid="stSidebar"] {
+        background-color: #f7f7f8;
+    }
+
+    [data-testid="stSidebar"] > div:first-child {
+        padding-top: 1.5rem;
+    }
+
+    /* Tiêu đề */
+    .mathdna-logo {
+        font-size: 25px;
+        font-weight: 700;
+        margin-bottom: 2px;
+    }
+
+    .mathdna-subtitle {
+        font-size: 13px;
+        opacity: 0.65;
+        margin-bottom: 18px;
+    }
+
+    /* Tiêu đề nhóm */
+    .sidebar-section {
+        font-size: 11px;
+        font-weight: 700;
+        opacity: 0.55;
+        margin-top: 18px;
+        margin-bottom: 7px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+</style>
+""", unsafe_allow_html=True)
+
 
 with st.sidebar:
 
-    st.title("🧠 MathDNA")
+    # --------------------------------------
+    # LOGO
+    # --------------------------------------
 
-    st.caption("Không gian học Toán của bạn")
+    st.markdown(
+        '<div class="mathdna-logo">🧠 MathDNA</div>',
+        unsafe_allow_html=True
+    )
 
-    st.divider()
+    st.markdown(
+        '<div class="mathdna-subtitle">'
+        'Trợ lý Toán học của bạn'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+
+    # --------------------------------------
+    # TẠO CUỘC TRÒ CHUYỆN MỚI
+    # --------------------------------------
 
     if st.button(
-        "＋ Cuộc trò chuyện mới",
+        "＋  Cuộc trò chuyện mới",
         use_container_width=True
     ):
 
@@ -96,42 +151,104 @@ with st.sidebar:
 
         st.rerun()
 
-    st.divider()
 
-    st.markdown("### 💬 Cuộc trò chuyện")
+    # --------------------------------------
+    # TÌM KIẾM
+    # --------------------------------------
 
-    for session_id, session in (
+    search_text = st.text_input(
+        "🔍",
+        placeholder="Tìm cuộc trò chuyện...",
+        label_visibility="collapsed"
+    )
+
+
+    # --------------------------------------
+    # LỌC PHIÊN
+    # --------------------------------------
+
+    sessions = list(
         st.session_state.sessions.items()
-    ):
+    )
 
-        title = session["title"]
 
-        if session_id == st.session_state.current_session:
-            title = "🔵 " + title
+    if search_text:
 
-        if st.button(
-            title,
-            key=f"open_{session_id}",
-            use_container_width=True
-        ):
+        sessions = [
+            item
+            for item in sessions
+            if search_text.lower()
+            in item[1]["title"].lower()
+        ]
 
-            st.session_state.current_session = session_id
 
-            st.rerun()
+    # --------------------------------------
+    # HÔM NAY
+    # --------------------------------------
 
-    st.divider()
+    st.markdown(
+        '<div class="sidebar-section">📚 Hôm nay</div>',
+        unsafe_allow_html=True
+    )
 
-    if st.button(
-        "🗑️ Xóa phiên hiện tại",
-        use_container_width=True
-    ):
 
-        delete_session(
+    for session_id, session in sessions:
+
+        # Chỉ hiển thị phiên hôm nay
+        # vì hiện tại chúng ta chưa lưu ngày riêng
+
+        is_current = (
+            session_id ==
             st.session_state.current_session
         )
 
-        st.rerun()
 
+        if is_current:
+
+            button_text = (
+                "🔵  " + session["title"]
+            )
+
+        else:
+
+            button_text = (
+                "　" + session["title"]
+            )
+
+
+        if st.button(
+            button_text,
+            key=f"sidebar_{session_id}",
+            use_container_width=True
+        ):
+
+            st.session_state.current_session = (
+                session_id
+            )
+
+            st.rerun()
+
+
+    # --------------------------------------
+    # PHẦN CUỐI SIDEBAR
+    # --------------------------------------
+
+    st.markdown(
+        "<br>",
+        unsafe_allow_html=True
+    )
+
+    st.divider()
+
+
+    if st.button(
+        "⚙️  Cài đặt",
+        use_container_width=True
+    ):
+
+        st.info(
+            "⚙️ Phần cài đặt sẽ được phát triển sau."
+        )
 
 # ==========================================
 # PHIÊN HIỆN TẠI
