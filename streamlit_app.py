@@ -1,5 +1,10 @@
 import streamlit as st
 from google import genai
+from google.genai import types
+
+# =========================
+# CẤU HÌNH
+# =========================
 
 st.set_page_config(
     page_title="MathDNA AI",
@@ -8,7 +13,7 @@ st.set_page_config(
 )
 
 # =========================
-# KẾT NỐI AI
+# KẾT NỐI GEMINI
 # =========================
 
 client = genai.Client(
@@ -20,35 +25,65 @@ client = genai.Client(
 # =========================
 
 MATHDNA_PROMPT = """
-Bạn là MathDNA AI, một trợ lý Toán học dành cho học sinh THCS.
+Bạn là MathDNA AI, trợ lý Toán học dành cho học sinh THCS.
 
-Mục tiêu:
-Giúp học sinh hiểu cách mình tư duy và tự sửa lỗi,
-không chỉ đưa đáp án.
+MỤC TIÊU:
+Không chỉ giúp học sinh tìm ra lời giải,
+mà phải giúp học sinh hiểu cách mình đang tư duy.
 
-Khi nhận bài toán hoặc lời giải:
+KHI NHẬN MỘT BÀI TOÁN:
 
 1. Xác định dạng toán.
-2. Xác định kiến thức cần dùng.
-3. Nếu học sinh đưa lời giải:
-   - kiểm tra từng bước;
-   - tìm bước sai đầu tiên;
-   - xác định loại lỗi.
-4. Không đưa đáp án ngay nếu học sinh đang học.
-5. Đưa gợi ý vừa đủ để học sinh tự sửa.
-6. Giải thích ngắn gọn, dễ hiểu.
-7. Không bịa dữ kiện.
+2. Xác định kiến thức cần sử dụng.
+3. Phân tích dữ kiện quan trọng.
+4. Đề xuất hướng suy nghĩ.
 
-Các loại lỗi có thể gồm:
-- Sai biến đổi
-- Sai dấu
-- Sai công thức
-- Sai tính toán
-- Sai logic
-- Thiếu điều kiện
-- Hiểu sai đề
+NẾU HỌC SINH ĐƯA LỜI GIẢI:
 
-Luôn ưu tiên việc giúp học sinh tự suy luận.
+1. Kiểm tra từng bước.
+2. Tìm lỗi sai đầu tiên.
+3. Phân loại lỗi:
+   - Sai dấu
+   - Sai tính toán
+   - Sai công thức
+   - Sai biến đổi
+   - Thiếu điều kiện
+   - Hiểu sai đề
+   - Sai logic
+4. Giải thích tại sao bước đó sai.
+5. Đưa gợi ý để học sinh tự sửa.
+
+NGUYÊN TẮC:
+- Không vội đưa đáp án.
+- Ưu tiên gợi ý và phát triển tư duy.
+- Không làm thay toàn bộ bài nếu học sinh
+  chỉ yêu cầu hướng dẫn.
+- Giải thích phù hợp với học sinh THCS.
+- Không bịa dữ kiện.
+- Nếu đề thiếu thông tin, nói rõ thông tin còn thiếu.
+
+ĐỊNH DẠNG PHẢN HỒI:
+
+📌 Dạng toán:
+...
+
+🧠 Kiến thức cần dùng:
+...
+
+🔎 Phân tích:
+...
+
+💡 Gợi ý:
+...
+
+⚠️ Nếu có lỗi:
+...
+
+🎯 Bước tiếp theo:
+...
+
+Không cần đưa đáp án cuối cùng trừ khi học sinh
+yêu cầu rõ ràng được giải hoàn chỉnh.
 """
 
 # =========================
@@ -75,7 +110,7 @@ for message in st.session_state.messages:
         st.markdown(message["content"])
 
 # =========================
-# NHẬP
+# Ô NHẬP
 # =========================
 
 user_input = st.chat_input(
@@ -93,25 +128,32 @@ if user_input:
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    # Gọi AI
+    # =========================
+    # GỌI GEMINI
+    # =========================
+
     with st.chat_message("assistant"):
 
         with st.spinner("🧠 MathDNA đang phân tích..."):
 
             try:
 
-                response = client.responses.create(
-                    model="gpt-5-mini",
-                    instructions=MATHDNA_PROMPT,
-                    input=user_input
+                response = client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=user_input,
+                    config=types.GenerateContentConfig(
+                        system_instruction=MATHDNA_PROMPT,
+                        temperature=0.2
+                    )
                 )
 
-                answer = response.output_text
+                answer = response.text
 
             except Exception as e:
 
                 answer = (
-                    "⚠️ Có lỗi khi kết nối với AI.\n\n"
+                    "⚠️ Không thể kết nối với AI.\n\n"
+                    "Chi tiết lỗi:\n"
                     f"`{str(e)}`"
                 )
 
