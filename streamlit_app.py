@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+from google import genai
 
 st.set_page_config(
     page_title="MathDNA AI",
@@ -11,8 +11,8 @@ st.set_page_config(
 # KẾT NỐI AI
 # =========================
 
-client = OpenAI(
-    api_key=st.secrets["OPENAI_API_KEY"]
+client = genai.Client(
+    api_key=st.secrets["GEMINI_API_KEY"]
 )
 
 # =========================
