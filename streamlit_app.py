@@ -150,10 +150,49 @@ for message in st.session_state.messages:
 # Ô NHẬP
 # ==========================================
 
+# ==========================================
+# NHẬP BÀI TOÁN BẰNG FILE / CAMERA
+# ==========================================
+
+col1, col2 = st.columns(2)
+
+with col1:
+    uploaded_file = st.file_uploader(
+        "📎 Đính kèm bài toán",
+        type=["png", "jpg", "jpeg", "pdf"],
+        label_visibility="collapsed"
+    )
+
+with col2:
+    camera_image = st.camera_input(
+        "📷 Chụp bài toán",
+        label_visibility="collapsed"
+    )
+
+
+# Hiển thị file đã chọn
+
+if uploaded_file is not None:
+    st.success(
+        f"📎 Đã chọn: {uploaded_file.name}"
+    )
+
+
+# Hiển thị ảnh vừa chụp
+
+if camera_image is not None:
+    st.image(
+        camera_image,
+        caption="Ảnh bài toán",
+        use_container_width=True
+    )
+
+
+# Ô nhập văn bản
+
 user_input = st.chat_input(
     "Nhập bài toán hoặc lời giải..."
 )
-
 
 # ==========================================
 # XỬ LÝ TIN NHẮN
@@ -215,20 +254,65 @@ if user_input:
 
             try:
 
-                response = client.models.generate_content(
+                # ==========================================
+# CHUẨN BỊ DỮ LIỆU CHO AI
+# ==========================================
 
-                    model="gemini-3.6-flash",
+contents = []
 
-                    contents=conversation_text,
+# Lịch sử hội thoại
+contents.append(conversation_text)
 
-                    config=types.GenerateContentConfig(
+# Ảnh từ camera
+if camera_image is not None:
 
-                        system_instruction=
-                        MATHDNA_PROMPT
+    contents.append(
+        types.Part.from_bytes(
+            data=camera_image.getvalue(),
+            mime_type=camera_image.type
+        )
+    )
 
-                    )
-                )
+    contents.append(
+        "Hãy đọc nội dung bài toán trong ảnh."
+    )
 
+
+# Ảnh/file được tải lên
+elif uploaded_file is not None:
+
+    if uploaded_file.type.startswith("image/"):
+
+        contents.append(
+            types.Part.from_bytes(
+                data=uploaded_file.getvalue(),
+                mime_type=uploaded_file.type
+            )
+        )
+
+        contents.append(
+            "Hãy đọc và phân tích bài toán trong ảnh."
+        )
+
+    else:
+        # PDF
+        file_data = client.files.upload(
+            file=uploaded_file
+        )
+
+        contents.append(file_data)
+
+        contents.append(
+            "Hãy đọc nội dung bài toán trong file "
+            "và phân tích nó."
+        )
+
+
+# Nếu người dùng nhập thêm câu hỏi
+if user_input:
+    contents.append(
+        f"CÂU HỎI HIỆN TẠI: {user_input}"
+    )
                 answer = response.text
 
 
