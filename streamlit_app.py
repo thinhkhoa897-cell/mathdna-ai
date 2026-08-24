@@ -783,16 +783,17 @@ else:
 # AI ANALYSIS
 # ==========================================
 
-result = analyze_with_gemini(
-    problem=user_input
-)
+if user_input:
+    result = analyze_with_gemini(
+        problem=user_input
+    )
 
-answer = result_to_text(result)
+    answer = result_to_text(result)
 
-add_message(
-    st.session_state.current_session,
-    "assistant",
-    answer
-)
+    add_message(
+        st.session_state.current_session,
+        "assistant",
+        answer
+    )
 
-st.rerun()
+    st.rerun()
