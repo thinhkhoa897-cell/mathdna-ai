@@ -1,6 +1,7 @@
 import streamlit as st
 import sqlite3
 from datetime import datetime
+from ai_engine import analyze_with_gemini, result_to_text
 
 # ==========================================
 # CONFIG
@@ -590,17 +591,20 @@ else:
             image_data
         )
 
-        answer = (
-            "🧠 **MathDNA đã nhận được bài của bạn.**\n\n"
-            "Tin nhắn đã được lưu vào phiên này.\n\n"
-            "🔜 Bộ phân tích Toán học sẽ được kết nối ở bước tiếp theo."
-        )
+# ==========================================
+# AI ANALYSIS
+# ==========================================
 
-        add_message(
-            st.session_state.current_session,
-            "assistant",
-            answer
-        )
+result = analyze_with_gemini(
+    problem=user_input
+)
 
-        st.rerun()
-        
+answer = result_to_text(result)
+
+add_message(
+    st.session_state.current_session,
+    "assistant",
+    answer
+)
+
+st.rerun()
