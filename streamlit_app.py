@@ -767,7 +767,27 @@ else:
         "Nhập bài toán hoặc câu hỏi..."
     )
 
-    if user_input:
+    user_input = st.chat_input("Nhập bài toán hoặc câu hỏi...")
+
+if user_input:
+    with st.spinner("🧠 MathDNA đang phân tích..."):
+        try:
+            result = analyze_with_gemini(
+                problem=user_input
+            )
+
+            answer = result_to_text(result)
+
+            add_message(
+                st.session_state.current_session,
+                "assistant",
+                answer
+            )
+
+            st.rerun()
+
+        except Exception as e:
+            st.error(f"⚠️ Có lỗi khi phân tích: {e}")
 
         messages_before = get_messages(
             st.session_state.current_session
