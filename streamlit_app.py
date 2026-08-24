@@ -113,7 +113,20 @@ Chỉ trả JSON.
 
 def demo_analysis(problem, student_answer=None):
 
-    text = problem.lower()
+    if not problem:
+        return {
+            "topic": "Chưa xác định",
+            "subtopic": "Chưa có đề bài",
+            "difficulty": 1,
+            "skills": [],
+            "errors": [],
+            "understanding": 0,
+            "solution_strategy": "",
+            "feedback": "Hãy nhập một bài toán để MathDNA phân tích.",
+            "next_practice": ""
+        }
+
+    text = str(problem).lower()
 
     if any(x in text for x in [
         "phương trình", "ẩn", "x²", "x^2"
