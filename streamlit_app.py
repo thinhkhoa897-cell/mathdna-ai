@@ -1,8 +1,196 @@
 import streamlit as st
 import sqlite3
 from datetime import datetime
-from ai_engine import analyze_with_gemini, result_to_text
+import json
+import os
+from typing import Any, Dict, Optional
 
+
+DEFAULT_RESULT = {
+    "topic": "Chưa xác định",
+    "subtopic": "Chưa xác định",
+    "difficulty": 1,
+    "skills": [],
+    "errors": [],
+    "understanding": 0,
+    "solution_strategy": "",
+    "feedback": "",
+    "next_practice": ""
+}
+
+
+def clean_ai_result(data):
+    result = DEFAULT_RESULT.copy()
+
+    for key in result:
+        if key in data:
+            result[key] = data[key]
+
+    try:
+        result["difficulty"] = max(
+            1, min(5, int(result["difficulty"]))
+        )
+    except:
+        result["difficulty"] = 1
+
+    try:
+        result["understanding"] = max(
+            0, min(100, int(result["understanding"]))
+        )
+    except:
+        result["understanding"] = 0
+
+    if not isinstance(result["skills"], list):
+        result["skills"] = [str(result["skills"])]
+
+    if not isinstance(result["errors"], list):
+        result["errors"] = [str(result["errors"])]
+
+    return result
+
+
+def analyze_with_gemini(problem, student_answer=None):
+
+    api_key = os.getenv("GEMINI_API_KEY")
+
+    # Chưa có API → chạy demo, không làm app sập
+    if not api_key:
+        return demo_analysis(problem, student_answer)
+
+    try:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=api_key)
+
+        prompt = f"""
+Bạn là MathDNA AI, chuyên phân tích tư duy toán học của học sinh THCS.
+
+Đề bài:
+{problem}
+
+Bài làm học sinh:
+{student_answer or "Chưa cung cấp"}
+
+Hãy phân tích và trả về JSON đúng cấu trúc:
+
+{{
+  "topic": "chủ đề lớn",
+  "subtopic": "dạng toán",
+  "difficulty": 1,
+  "skills": [],
+  "errors": [],
+  "understanding": 0,
+  "solution_strategy": "",
+  "feedback": "",
+  "next_practice": ""
+}}
+
+difficulty từ 1 đến 5.
+understanding từ 0 đến 100.
+Chỉ trả JSON.
+"""
+
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                response_mime_type="application/json"
+            )
+        )
+
+        data = json.loads(response.text)
+
+        return clean_ai_result(data)
+
+    except Exception as e:
+
+        result = demo_analysis(problem, student_answer)
+        result["_error"] = str(e)
+
+        return result
+
+
+def demo_analysis(problem, student_answer=None):
+
+    text = problem.lower()
+
+    if any(x in text for x in [
+        "phương trình", "ẩn", "x²", "x^2"
+    ]):
+        topic = "Đại số"
+
+    elif any(x in text for x in [
+        "tam giác", "đường tròn",
+        "góc", "hình vuông"
+    ]):
+        topic = "Hình học"
+
+    elif any(x in text for x in [
+        "hàm số", "f(x)", "đồ thị"
+    ]):
+        topic = "Hàm số"
+
+    else:
+        topic = "Toán học"
+
+    return {
+        "topic": topic,
+        "subtopic": "Chưa phân tích chi tiết",
+        "difficulty": 2,
+        "skills": [
+            "Đọc hiểu đề bài",
+            "Lập luận"
+        ],
+        "errors": [],
+        "understanding": 50 if student_answer else 0,
+        "solution_strategy":
+            "Xác định dữ kiện, mục tiêu và lựa chọn phương pháp phù hợp.",
+        "feedback":
+            "Đang chạy chế độ phân tích cơ bản.",
+        "next_practice":
+            "Luyện thêm một bài cùng chủ đề."
+    }
+
+
+def result_to_text(result):
+
+    lines = [
+        f"📚 **Dạng toán:** {result['topic']}",
+        f"🔎 **Chủ đề:** {result['subtopic']}",
+        f"⭐ **Độ khó:** {result['difficulty']}/5"
+    ]
+
+    if result["skills"]:
+        lines.append(
+            "🧠 **Kỹ năng:** " +
+            ", ".join(result["skills"])
+        )
+
+    if result["errors"]:
+        lines.append(
+            "⚠️ **Điểm cần chú ý:** " +
+            ", ".join(result["errors"])
+        )
+
+    if result["understanding"] > 0:
+        lines.append(
+            f"📈 **Mức độ hiểu:** "
+            f"{result['understanding']}/100"
+        )
+
+    if result["feedback"]:
+        lines.append(
+            f"💡 **Nhận xét:** {result['feedback']}"
+        )
+
+    if result["next_practice"]:
+        lines.append(
+            f"🎯 **Nên luyện tiếp:** "
+            f"{result['next_practice']}"
+        )
+
+    return "\n\n".join(lines)
 # ==========================================
 # CONFIG
 # ==========================================
